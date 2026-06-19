@@ -58,6 +58,10 @@
   .tcard:active{transform:scale(.97)} .tcard.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold);background:rgba(255,213,74,.12)}
   .tcard .fl{font-size:30px} .tcard .nm{font-weight:800;font-size:16px;line-height:1.05} .tcard .st{font:700 9px 'Space Mono';color:#a9cfb1}
   .scrfoot{flex:0 0 auto;padding:0 14px 16px}
+  .goalsel{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px}
+  .goalsel .gl{font:700 10px 'Space Mono';color:#a9cfb1;letter-spacing:1px;margin-right:4px}
+  .goalsel button{width:44px;padding:9px 0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22);font-size:15px;font-weight:800}
+  .goalsel button.on{background:var(--gold);color:#3a2600;border-color:var(--gold)}
 
   /* result */
   #result .scrhead{padding-top:40px}
@@ -113,7 +117,13 @@
       <div class="pickhint">PICK YOUR NATION ⚽</div>
     </div>
     <div class="pgrid" id="pgrid"></div>
-    <div class="scrfoot"><button class="btn-go" id="kickoffBtn" style="width:100%" disabled>PICK A TEAM TO KICK OFF</button></div>
+    <div class="scrfoot">
+      <div class="goalsel" id="goalSel">
+        <span class="gl">FIRST TO</span>
+        <button data-w="2">2</button><button data-w="3" class="on">3</button><button data-w="4">4</button><button data-w="5">5</button>
+      </div>
+      <button class="btn-go" id="kickoffBtn" style="width:100%" disabled>PICK A TEAM TO KICK OFF</button>
+    </div>
   </div>
 
   <!-- result -->
@@ -205,7 +215,7 @@ const GOALW=120;            // goal mouth width
 const cx=FW/2;
 const DR=16, BR=12;         // disc / ball radius
 const FRICTION=0.978, REST_W=0.78, REST_D=0.92, MINV=0.07, MAXV=30;
-const WIN=5;
+let WIN=3;   // goals to win — chosen on the team screen
 
 let bodies=[], ball=null, youTeam=null, oppTeam=null, youScore=0, oppScore=0;
 let state='select';         // select | aim | sim | over
@@ -432,6 +442,9 @@ TEAMS.forEach((t,i)=>{ const d=document.createElement('div'); d.className='tcard
   d.onclick=()=>{ selIdx=i; [...pgrid.children].forEach(c=>c.classList.remove('sel')); d.classList.add('sel');
     document.getElementById('kickoffBtn').disabled=false; document.getElementById('kickoffBtn').textContent=`KICK OFF as ${t.n} ⚽`; };
   pgrid.appendChild(d); });
+document.querySelectorAll('#goalSel button').forEach(btn=>{
+  btn.onclick=()=>{ WIN=+btn.dataset.w; document.querySelectorAll('#goalSel button').forEach(b=>b.classList.toggle('on',b===btn)); };
+});
 document.getElementById('kickoffBtn').onclick=()=>{ if(selIdx<0)return;
   try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
   startMatch(selIdx); };
