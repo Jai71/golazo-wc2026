@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0a7d2c" />
+<title>THE DIVE ⚽ — On-Chain Honor</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --grass:#0a7d2c;--grass2:#0a6e27;--gold:#ffd54a;--card:#0f2a18;
+    --pop:#ff2e63;--sol:#9945ff;--sol2:#14f195;--clean:#14f195;--light:#ffd54a;--crunch:#ff3b3b;
+  }
+  html,body{height:100%}
+  body{font-family:Archivo,system-ui,sans-serif;color:#fff;overflow:hidden;user-select:none;touch-action:manipulation;
+    background:radial-gradient(120% 80% at 50% -10%,#14b04a 0%,var(--grass) 45%,var(--grass2) 100%);
+    display:flex;flex-direction:column;align-items:center;min-height:100dvh}
+  .wrap{width:100%;max-width:480px;display:flex;flex-direction:column;height:100dvh;padding:10px 12px 14px}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto}
+  .brand{font-weight:900;font-size:26px;letter-spacing:-1px;line-height:1;
+    background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .brand small{display:block;font-size:9px;letter-spacing:2px;color:#dfffe9;font-weight:700;-webkit-text-fill-color:#dfffe9}
+  .tag{font:700 9px/1.2 'Space Mono',monospace;letter-spacing:1px;color:#04210f;background:var(--gold);padding:6px 8px;border-radius:999px;text-align:center}
+
+  .scoreboard{display:flex;gap:8px;margin:10px 0 8px;flex:0 0 auto}
+  .stat{flex:1;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px 6px;text-align:center}
+  .stat b{display:block;font-size:22px;font-weight:900;line-height:1}
+  .stat span{font:700 9px/1.4 'Space Mono',monospace;letter-spacing:1px;color:#bff5cf}
+  .stat.shame b{color:var(--pop)} .stat.goals b{color:var(--gold)}
+
+  .stage{position:relative;flex:1 1 auto;min-height:0;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,#16a049 0%,#0c8f3a 55%,#0a7d2c 100%);
+    border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 -40px 60px rgba(0,0,0,.25)}
+  .crowd{position:absolute;top:0;left:0;right:0;height:9%;background:repeating-linear-gradient(90deg,#2b2f6a 0 6px,#3a3f8a 6px 12px,#5b2c7a 12px 18px);opacity:.8}
+  .stripes{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 14%,transparent 14% 28%)}
+  .goal{position:absolute;top:11%;left:50%;transform:translateX(-50%);width:70%;height:26%;border:5px solid #fff;border-bottom:none;border-radius:8px 8px 0 0;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 2px,transparent 2px 15px),repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,transparent 2px 15px),rgba(255,255,255,.04)}
+  .keeper{position:absolute;top:30%;left:50%;transform:translateX(-50%);font-size:36px;transition:left .3s,transform .3s}
+  .arc{position:absolute;bottom:14%;left:50%;transform:translateX(-50%);width:64%;height:30%;border:3px solid rgba(255,255,255,.35);border-bottom:none;border-radius:50% 50% 0 0/100% 100% 0 0}
+
+  .striker{position:absolute;bottom:16%;left:62%;font-size:52px;transition:transform .35s,bottom .4s,left .4s;z-index:4;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35))}
+  .defender{position:absolute;bottom:13%;left:-20%;font-size:50px;transition:left 1s cubic-bezier(.45,0,.3,1),transform .3s;z-index:3;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35))}
+  .ball2{position:absolute;bottom:18%;left:56%;font-size:26px;transition:all .45s cubic-bezier(.3,.7,.4,1);z-index:5;filter:drop-shadow(0 6px 5px rgba(0,0,0,.4))}
+  .clash{position:absolute;bottom:24%;left:50%;transform:translate(-50%,0) scale(0);font-size:60px;z-index:6;transition:transform .15s;opacity:0}
+  .clash.show{transform:translate(-50%,0) scale(1);opacity:1}
+
+  .sev{position:absolute;top:46%;left:0;right:0;text-align:center;font-weight:900;font-size:34px;letter-spacing:-1px;z-index:7;
+    opacity:0;transform:scale(.5);transition:.18s;text-shadow:0 4px 12px rgba(0,0,0,.5);pointer-events:none}
+  .sev.show{opacity:1;transform:scale(1)}
+  .sev.clean{color:var(--clean)} .sev.light{color:var(--light)} .sev.crunch{color:var(--crunch)}
+
+  .result{position:absolute;top:40%;left:0;right:0;text-align:center;z-index:8;opacity:0;transform:scale(.6);transition:.2s;pointer-events:none;padding:0 14px}
+  .result.show{opacity:1;transform:scale(1)}
+  .result .big{font-weight:900;font-size:30px;letter-spacing:-1px;text-shadow:0 4px 12px rgba(0,0,0,.5);line-height:1.05}
+  .result .sub{font:700 13px 'Space Mono';margin-top:6px;color:#eafff0}
+  .card{position:absolute;top:34%;left:50%;width:60px;height:84px;border-radius:8px;transform:translateX(-50%) rotateX(90deg);transform-origin:bottom;
+    transition:transform .35s;z-index:9;box-shadow:0 10px 20px rgba(0,0,0,.4)}
+  .card.show{transform:translateX(-50%) rotateX(0)} .card.yellow{background:#ffd60a} .card.red{background:#ff2e2e}
+
+  .hint{position:absolute;bottom:9px;left:0;right:0;text-align:center;font:700 12px 'Space Mono';color:#eafff0;z-index:7;text-shadow:0 2px 6px rgba(0,0,0,.5);pointer-events:none}
+
+  /* decision overlay */
+  .decision{position:absolute;inset:0;display:none;flex-direction:column;justify-content:flex-end;gap:10px;padding:14px;z-index:10;
+    background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.45))}
+  .decision.show{display:flex}
+  .timer{align-self:center;font:900 16px 'Space Mono';color:#fff;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.25);
+    padding:6px 14px;border-radius:999px;margin-bottom:4px}
+  .timerbar{position:absolute;top:0;left:0;height:5px;background:var(--gold);width:100%}
+  .choices{display:flex;gap:10px}
+  .choices button{flex:1;padding:16px 8px;font-weight:900;font-size:17px;border:none;border-radius:14px;cursor:pointer;line-height:1.1;transition:transform .08s}
+  .choices button:active{transform:scale(.96)}
+  .stay{background:linear-gradient(90deg,var(--sol2),#0fd17f);color:#04210f}
+  .dive{background:linear-gradient(90deg,var(--pop),#ff5c8a);color:#fff}
+  .choices small{display:block;font:700 9px 'Space Mono';opacity:.8;margin-top:3px}
+
+  .foot{flex:0 0 auto;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  button{font-family:Archivo}
+  .solbar{background:rgba(0,0,0,.25);border:1px solid rgba(153,69,255,.4);border-radius:14px;padding:9px 11px;
+    font:700 11px 'Space Mono';display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .solbar .l{color:var(--sol2)} .solbar .r{color:#cdbcff;text-align:right}
+  .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sol2);margin-right:6px;animation:p 1.6s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(20,241,149,.6)}70%{box-shadow:0 0 0 8px rgba(20,241,149,0)}100%{box-shadow:0 0 0 0 rgba(20,241,149,0)}}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+  .btn-sol{background:linear-gradient(90deg,var(--sol),#7d27e0);color:#fff;border:none;border-radius:14px;padding:14px;font-weight:800;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s}
+  .btn-sol:active{transform:translateY(2px)}
+  .btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:14px;font-weight:800;font-size:16px;cursor:pointer}
+
+  .modal{position:fixed;inset:0;background:rgba(3,12,6,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:18px;z-index:30}
+  .modal.show{display:flex}
+  .sheet{width:100%;max-width:380px;background:linear-gradient(180deg,#10331d,#0a2113);border:1px solid rgba(255,255,255,.16);border-radius:22px;padding:22px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .verdict{font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1.05;margin-bottom:6px}
+  .sheet .line{font:700 12px 'Space Mono';color:#bff5cf;margin-bottom:14px}
+  .nameIn{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);color:#fff;font:800 15px Archivo;text-align:center;margin-bottom:10px}
+  .nameIn::placeholder{color:#7fae8d}
+  .txlink{display:block;margin-top:10px;font:700 11px 'Space Mono';color:var(--sol2);word-break:break-all;text-decoration:none}
+  .mini{font:700 10px 'Space Mono';color:#9fd9b1;margin-top:8px}
+  .btn-go{background:linear-gradient(90deg,var(--gold),#ffb300);color:#3a2400;border:none;border-radius:14px;padding:14px;font-weight:800;font-size:16px;cursor:pointer}
+  canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:40}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+  <header>
+    <div class="brand">THE DIVE<small>YOUR WALLET'S HONOR IS ON-CHAIN</small></div>
+    <div class="tag">VIBER × SOLANA<br>WORLD CUP</div>
+  </header>
+
+  <div class="scoreboard">
+    <div class="stat"><b id="sRound">1/5</b><span>ROUND</span></div>
+    <div class="stat goals"><b id="sGoals">0</b><span>GOALS</span></div>
+    <div class="stat shame"><b id="sDives">0</b><span>DIVES 🤥</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="crowd"></div><div class="stripes"></div>
+    <div class="goal"></div><div class="arc"></div>
+    <div class="keeper" id="keeper">🧤</div>
+    <div class="striker" id="striker">🏃</div>
+    <div class="defender" id="defender">🦿</div>
+    <div class="ball2" id="ball2">⚽</div>
+    <div class="clash" id="clash">💥</div>
+    <div class="sev" id="sev"></div>
+    <div class="result" id="result"></div>
+    <div class="card" id="cardEl"></div>
+    <div class="hint" id="hint">tap START to face the defender ⚽</div>
+
+    <div class="decision" id="decision">
+      <div class="timerbar" id="timerbar"></div>
+      <div class="timer" id="timer">DECIDE: 3</div>
+      <div class="choices">
+        <button class="stay" id="stayBtn">🦵 STAY UP<small>stay honest · risk: no call</small></button>
+        <button class="dive" id="diveBtn">🎭 DIVE<small>win a penalty · risk: BOOKED</small></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="solbar" id="solbar">
+      <span class="l"><span class="pulse"></span><span id="solStatus">SOLANA · DEVNET</span></span>
+      <span class="r" id="solInfo">tap “Connect” to put your honor on-chain →</span>
+    </div>
+    <div class="row">
+      <button class="btn-sol" id="connectBtn">⬡ Connect Phantom</button>
+      <button class="btn-ghost" id="startBtn">▶ Start match</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="sheet">
+    <div class="verdict" id="moVerdict">FULL TIME</div>
+    <div class="line" id="moLine"></div>
+    <input class="nameIn" id="moName" maxlength="16" placeholder="your name / handle" />
+    <button class="btn-sol" id="mintBtn" style="width:100%">⛓️ Brand my verdict on Solana</button>
+    <a class="txlink" id="moTx" target="_blank" rel="noopener"></a>
+    <div class="mini" id="moMini"></div>
+    <button class="btn-go" id="playAgain" style="width:100%;margin-top:12px">⚽ Play again</button>
+  </div>
+</div>
+
+<script type="module">
+/* ================= SOLANA (reused, debugged: preload + mobile deeplink) ================= */
+let SOL=null,connection=null,provider=null,walletPk=null;
+const MEMO_PROGRAM="MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
+const solInfo=document.getElementById('solInfo'),solStatus=document.getElementById('solStatus');
+async function loadSolana(){ if(SOL) return SOL;
+  SOL=await import("https://esm.sh/@solana/web3.js@1.95.3");
+  connection=new SOL.Connection(SOL.clusterApiUrl("devnet"),"confirmed"); return SOL; }
+const getProvider=()=>window.phantom?.solana??window.solana;
+const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+loadSolana().catch(()=>{});
+const short=a=>a.slice(0,4)+'…'+a.slice(-4);
+async function refreshBal(){ if(!walletPk) return;
+  try{const b=await connection.getBalance(walletPk);solInfo.textContent=`${(b/SOL.LAMPORTS_PER_SOL).toFixed(3)} SOL · ${short(walletPk.toBase58())}`;}catch(e){} }
+
+let walletState='idle';
+const connectBtn=document.getElementById('connectBtn');
+async function onWalletBtn(){
+  if(walletState==='connected') return airdrop();
+  try{
+    if(!SOL){ connectBtn.textContent='… loading'; await loadSolana(); }
+    provider=getProvider();
+    if(!provider?.isPhantom){
+      if(isMobile){ const u=encodeURIComponent(location.href); solInfo.textContent='opening in Phantom app…'; location.href=`https://phantom.app/ul/browse/${u}?ref=${u}`; return; }
+      solInfo.textContent='Phantom not detected — install/enable the extension at phantom.app, then reload'; return;
+    }
+    connectBtn.textContent='… approve in Phantom';
+    const res=await provider.connect();
+    walletPk=new SOL.PublicKey(res.publicKey.toString());
+    walletState='connected'; solStatus.textContent='CONNECTED · DEVNET';
+    connectBtn.textContent='💧 Get devnet SOL'; await refreshBal();
+  }catch(err){ solInfo.textContent=(err?.code===4001)?'connect rejected in Phantom':('connect failed: '+(err?.message||'unknown')); connectBtn.textContent='⬡ Connect Phantom'; }
+}
+async function airdrop(){ if(!walletPk) return; solInfo.textContent='requesting airdrop…';
+  try{const sig=await connection.requestAirdrop(walletPk,SOL.LAMPORTS_PER_SOL);await connection.confirmTransaction(sig,"confirmed");await refreshBal();}
+  catch(e){ solInfo.textContent='faucet busy → faucet.solana.com'; } }
+connectBtn.addEventListener('click',onWalletBtn);
+
+async function mintVerdict(name,memoText){
+  await loadSolana();
+  if(!provider){ provider=getProvider(); if(provider?.isPhantom){ const r=await provider.connect(); walletPk=new SOL.PublicKey(r.publicKey.toString()); walletState='connected'; } }
+  if(!provider?.isPhantom||!walletPk) throw new Error('Connect Phantom first');
+  const ix=new SOL.TransactionInstruction({keys:[{pubkey:walletPk,isSigner:true,isWritable:false}],programId:new SOL.PublicKey(MEMO_PROGRAM),data:new TextEncoder().encode(memoText)});
+  const tx=new SOL.Transaction().add(ix); tx.feePayer=walletPk; tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+  const {signature}=await provider.signAndSendTransaction(tx); await connection.confirmTransaction(signature,"confirmed"); refreshBal(); return signature;
+}
+
+/* ================= SFX + confetti (reused) ================= */
+let actx;
+function tone(f,d,t='sine',v=.2,w=0){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(actx.destination);const s=actx.currentTime+w;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d);}catch(e){}}
+const sGoal=()=>{[523,659,784,1046].forEach((f,i)=>tone(f,.18,'square',.18,i*.08));tone(180,.5,'sawtooth',.12,.1)};
+const sWhistle=()=>{tone(2200,.12,'square',.12);tone(2600,.12,'square',.12,.13)};
+const sBuzz=()=>{tone(150,.35,'sawtooth',.22);tone(90,.4,'square',.18,.05)};
+const sThud=()=>tone(120,.12,'sawtooth',.3);
+const fx=document.getElementById('fx'),fxc=fx.getContext('2d');let parts=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight}sizeFx();addEventListener('resize',sizeFx);
+function burst(n=120,cols){cols=cols||['#ffd54a','#14f195','#9945ff','#ff2e63','#fff'];for(let i=0;i<n;i++)parts.push({x:innerWidth/2,y:innerHeight*.42,vx:(Math.random()-.5)*14,vy:Math.random()*-14-4,g:.4+Math.random()*.3,s:6+Math.random()*7,c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-.5)*.5,life:60+Math.random()*40})}
+function tick(){fxc.clearRect(0,0,fx.width,fx.height);parts=parts.filter(p=>p.life-->0);parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;fxc.save();fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);fxc.restore()});requestAnimationFrame(tick)}tick();
+
+/* ================= THE DIVE — game ================= */
+const MAXR=5;
+let round=0,goals=0,dives=0,bookings=0,fairPlay=0,busy=false,timerId=null,deadline=0;
+const el=id=>document.getElementById(id);
+const stage=el('stage'),striker=el('striker'),defender=el('defender'),ball2=el('ball2'),clash=el('clash'),
+  sev=el('sev'),result=el('result'),cardEl=el('cardEl'),hint=el('hint'),keeper=el('keeper'),
+  decision=el('decision'),timerEl=el('timer'),timerbar=el('timerbar'),modal=el('modal');
+let curSeverity=null;
+
+function hud(){ el('sRound').textContent=Math.min(round,MAXR)+'/'+MAXR; el('sGoals').textContent=goals; el('sDives').textContent=dives; }
+function resetScene(){
+  defender.style.transition='none'; defender.style.left='-22%'; defender.style.transform='';
+  striker.style.left='62%'; striker.style.bottom='16%'; striker.style.transform='';
+  ball2.style.transition='none'; ball2.style.left='56%'; ball2.style.bottom='18%'; ball2.style.fontSize='26px'; ball2.style.opacity='1';
+  clash.className='clash'; sev.className='sev'; result.className='result'; cardEl.className='card';
+  keeper.style.left='50%'; keeper.style.transform='translateX(-50%)';
+}
+function startMatch(){
+  round=0;goals=0;dives=0;bookings=0;fairPlay=0; hud(); modal.classList.remove('show');
+  el('startBtn').textContent='▶ Restart'; nextRound();
+}
+function nextRound(){
+  if(round>=MAXR){ return endMatch(); }
+  round++; hud(); busy=true; resetScene();
+  hint.textContent='here comes the defender…';
+  // pick contact severity (the player's "tell")
+  const r=Math.random(); curSeverity = r<.34?'clean': r<.67?'light':'crunch';
+  // animate defender sliding in
+  requestAnimationFrame(()=>{ defender.style.transition='left 1s cubic-bezier(.45,0,.3,1)'; defender.style.left='50%'; });
+  setTimeout(()=>{ // contact
+    sThud(); defender.style.transform='rotate(-25deg)'; striker.style.transform='rotate(8deg) translateY(-4px)';
+    clash.classList.add('show'); stageShake();
+    // reveal severity tell
+    const label = curSeverity==='clean'?'CLEAN! NO CONTACT':curSeverity==='light'?'LIGHT TOUCH…':'CRUNCH!! 💢';
+    sev.textContent=label; sev.className='sev show '+curSeverity;
+    setTimeout(()=>{ clash.classList.remove('show'); openDecision(); },550);
+  },1000);
+}
+function openDecision(){
+  decision.classList.add('show'); hint.textContent='';
+  let t=3.0; deadline=t; timerbar.style.transition='none'; timerbar.style.width='100%';
+  requestAnimationFrame(()=>{ timerbar.style.transition='width 3s linear'; timerbar.style.width='0%'; });
+  timerEl.textContent='DECIDE: 3';
+  clearInterval(timerId);
+  timerId=setInterval(()=>{ t-=0.1; if(t<=0){ clearInterval(timerId); decide('stay',true); } else timerEl.textContent='DECIDE: '+Math.ceil(t); },100);
+}
+el('stayBtn').addEventListener('click',()=>decide('stay'));
+el('diveBtn').addEventListener('click',()=>decide('dive'));
+
+function decide(choice,timeout){
+  if(!decision.classList.contains('show')) return;
+  clearInterval(timerId); decision.classList.remove('show'); sev.classList.remove('show');
+  resolve(choice,!!timeout);
+}
+
+function showResult(big,sub,color){ result.innerHTML=`<div class="big" style="color:${color}">${big}</div><div class="sub">${sub}</div>`; result.classList.add('show'); }
+function penaltyGoal(){ // quick auto-penalty animation
+  keeper.style.left=(Math.random()<.5?'30%':'70%');
+  ball2.style.transition='all .45s cubic-bezier(.3,.7,.4,1)';
+  ball2.style.left=(40+Math.random()*20)+'%'; ball2.style.bottom='34%'; ball2.style.fontSize='18px';
+}
+function bookingCard(red){ cardEl.className='card '+(red?'red':'yellow'); requestAnimationFrame(()=>cardEl.classList.add('show')); }
+
+function resolve(choice,timeout){
+  const s=curSeverity; let big,sub,col,scored=false,dove=false,booked=false,red=false;
+  const rr=Math.random();
+  if(choice==='stay'){
+    if(s==='crunch'){ scored=true; big='HONEST PENALTY! ⚽'; sub=(timeout?'(ran down the clock — stayed up)':'')+' you took the hit — ref points to the spot'; col='var(--sol2)'; fairPlay+=10; }
+    else if(s==='light'){ if(rr<.4){ scored=true; big='PENALTY GIVEN! ⚽'; sub='soft, but the ref bought your honesty'; col='var(--sol2)'; fairPlay+=6; } else { big='PLAY ON — RESPECT 👏'; sub='no call, but you kept your feet'; col='#eafff0'; fairPlay+=6; } }
+    else { big='STAYED ON YOUR FEET 👏'; sub='clean play, nothing in it — pure class'; col='#eafff0'; fairPlay+=5; }
+  } else { // dive
+    dove=true; dives++;
+    if(s==='crunch'){ if(rr<.85){ scored=true; big='DIVE PAID OFF 🎭'; sub='there was contact… you sold it. PENALTY (flagged dive)'; col='var(--gold)'; } else { big='REF WAVES PLAY ON'; sub='overcooked it — nothing given'; col='#eafff0'; } }
+    else if(s==='light'){ if(rr<.45){ scored=true; big='SOFT PENALTY WON 🎭'; sub='cheeky… and it worked'; col='var(--gold)'; } else if(rr<.8){ big='NOT CONVINCING'; sub='ref unimpressed — no call'; col='#eafff0'; } else { booked=true; big='BOOKED! SIMULATION 🟨'; sub='ref saw right through you'; col='var(--pop)'; } }
+    else { if(rr<.7){ booked=true; red=(Math.random()<.25); big=red?'RED CARD! 🟥':'BOOKED! SIMULATION 🟨'; sub='there was NO contact — shameful dive'; col='var(--pop)'; } else { big='REF NOT FOOLED'; sub='blatant — but only a warning'; col='#eafff0'; } }
+    if(booked){ bookings++; }
+  }
+  hud();
+  if(scored){ goals++; hud(); penaltyGoal(); setTimeout(()=>{ sGoal(); burst(dove?140:120, dove?['#ffd54a','#ff2e63','#fff']:undefined); },380); navigator.vibrate?.([40,40,80]); }
+  if(booked){ bookingCard(red); sBuzz(); navigator.vibrate?.(200); }
+  if(scored) sWhistle();
+  setTimeout(()=>showResult(big,sub,col), scored?180:60);
+  setTimeout(()=>{ result.classList.remove('show'); if(round>=MAXR) endMatch(); else { busy=false; nextRound(); } }, 1900);
+}
+function stageShake(){ stage.animate([{transform:'translateX(0)'},{transform:'translateX(-7px)'},{transform:'translateX(7px)'},{transform:'translateX(0)'}],{duration:200}); }
+
+function verdictFor(){
+  if(dives===0) return {v:'FAIR PLAY AWARD ⚽',c:'var(--sol2)',tag:'FAIR PLAY AWARD'};
+  if(bookings>=2||dives>=3) return {v:'SERIAL DIVER 🤡🟥',c:'var(--pop)',tag:'SERIAL DIVER — HALL OF SHAME'};
+  if(bookings>=1) return {v:'DIRTY PLAYER 🟨',c:'var(--pop)',tag:'DIRTY PLAYER'};
+  return {v:'CHEEKY OPERATOR 😏',c:'var(--gold)',tag:'CHEEKY OPERATOR'};
+}
+function endMatch(){
+  decision.classList.remove('show');
+  const vd=verdictFor();
+  el('moVerdict').innerHTML=`<span style="color:${vd.c}">${vd.v}</span>`;
+  el('moLine').innerHTML=`${goals} goals · ${dives} dive${dives!==1?'s':''} · ${bookings} booking${bookings!==1?'s':''} · ${fairPlay} fair-play pts<br><span style="opacity:.85">brand this verdict onto your wallet — forever, on Solana ⛓️</span>`;
+  el('moTx').textContent=''; el('moTx').removeAttribute('href'); el('moMini').textContent='';
+  const saved=localStorage.getItem('dive_name'); if(saved) el('moName').value=saved;
+  el('mintBtn').disabled=false; el('mintBtn').textContent='⛓️ Brand my verdict on Solana';
+  if(vd.tag==='FAIR PLAY AWARD') burst(160,['#14f195','#fff','#ffd54a']);
+  modal.classList.add('show');
+}
+el('startBtn').addEventListener('click',startMatch);
+el('playAgain').addEventListener('click',startMatch);
+
+el('mintBtn').addEventListener('click',async(e)=>{
+  const btn=e.currentTarget,name=el('moName').value.trim(); localStorage.setItem('dive_name',name);
+  const vd=verdictFor(), mini=el('moMini'), tx=el('moTx');
+  const wshort = walletPk?short(walletPk.toBase58()):'wallet';
+  const memo=`THE DIVE ⚽ | ${name||wshort} | ${goals} goals, ${dives} dives, ${bookings} bookings | ${vd.tag}`;
+  btn.disabled=true; const old=btn.textContent; btn.textContent='⛓️ signing on Solana…'; mini.textContent='approve in Phantom — writing your verdict to devnet';
+  try{
+    const sig=await mintVerdict(name,memo);
+    tx.textContent='✅ on-chain proof → view on Solana Explorer'; tx.href=`https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+    mini.textContent='your verdict now lives permanently on Solana 🟢'; btn.textContent='⛓️ Branded!'; burst(150); sGoal();
+  }catch(err){ mini.textContent=(err.message||'mint failed')+' — need devnet SOL? tap Connect → Get devnet SOL'; btn.disabled=false; btn.textContent=old; }
+});
+
+resetScene(); hud();
+</script>
+</body>
+</html>

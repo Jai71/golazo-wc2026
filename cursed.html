@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>CURSED ⚽ — World Cup 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{--bg:#0a0a0a;--gold:#ffce47;--red:#ff2e2e;--green:#16e07a;--sol:#9945ff;--sol2:#14f195;--ink:#e9e6df;--muted:#8a857c}
+  html,body{height:100%}
+  body{font-family:Archivo,system-ui,sans-serif;color:var(--ink);background:
+    radial-gradient(120% 90% at 50% -20%, #1c1206 0%, #0a0a0a 55%),
+    var(--bg);overflow:hidden;user-select:none;touch-action:manipulation;min-height:100dvh;display:flex;justify-content:center}
+  .wrap{width:100%;max-width:480px;height:100dvh;display:flex;flex-direction:column;padding:12px 12px 14px;position:relative}
+
+  header{flex:0 0 auto;text-align:center;margin-bottom:8px}
+  .title{font-weight:900;font-size:34px;letter-spacing:3px;line-height:1;
+    background:linear-gradient(180deg,#fff,var(--gold) 70%,#a8791b);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 2px 18px rgba(255,206,71,.25)}
+  .sub{font:700 10px/1.3 'Space Mono',monospace;letter-spacing:1.5px;color:var(--muted);margin-top:4px}
+  .sub b{color:var(--red)}
+  .live{display:inline-block;font:700 9px 'Space Mono';color:#0a0a0a;background:var(--red);padding:3px 7px;border-radius:999px;letter-spacing:1px;margin-top:6px}
+  .live::before{content:'● ';color:#0a0a0a}
+
+  .scrollarea{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:4px -4px;padding:0 4px}
+  .meta{font:700 10px 'Space Mono';color:var(--muted);text-align:center;margin:4px 0 8px;letter-spacing:.5px}
+  .meta b{color:var(--gold)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .card{position:relative;background:#141414;border:1px solid #262626;border-radius:14px;padding:10px 10px 11px;cursor:pointer;transition:.12s;overflow:hidden}
+  .card:active{transform:scale(.98)}
+  .card.sel{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 8px 24px rgba(255,206,71,.18);background:#1a1505}
+  .card.cursed{border-color:#5a1414}
+  .card .top{display:flex;align-items:center;gap:8px}
+  .card .flag{font-size:26px;line-height:1}
+  .card .nm{font-weight:800;font-size:15px;line-height:1.05}
+  .card .star{font:700 9px 'Space Mono';color:var(--muted);margin-top:1px}
+  .meter{margin-top:9px;height:7px;border-radius:6px;background:#0a0a0a;border:1px solid #222;overflow:hidden}
+  .meter > i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#3aa76d,var(--gold));transition:width .5s}
+  .card.cursed .meter > i{background:linear-gradient(90deg,#ff7a2e,var(--red))}
+  .pct{display:flex;justify-content:space-between;font:700 9px 'Space Mono';margin-top:5px;color:var(--muted)}
+  .pct .risk{color:var(--green)} .card.cursed .pct .risk{color:var(--red)}
+  .badge{position:absolute;top:8px;right:8px;font-size:13px;opacity:0;transition:.2s}
+  .card.cursed .badge{opacity:1}
+  .selbadge{position:absolute;bottom:8px;right:9px;font:800 9px 'Space Mono';color:var(--gold);opacity:0}
+  .card.sel .selbadge{opacity:1}
+
+  .foot{flex:0 0 auto;margin-top:8px;display:flex;flex-direction:column;gap:8px}
+  .solbar{background:rgba(153,69,255,.08);border:1px solid rgba(153,69,255,.4);border-radius:12px;padding:8px 11px;font:700 10px 'Space Mono';display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .solbar .l{color:var(--sol2)} .solbar .r{color:#cdbcff;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--sol2);margin-right:6px;animation:p 1.6s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(20,241,149,.6)}70%{box-shadow:0 0 0 7px rgba(20,241,149,0)}100%{box-shadow:0 0 0 0 rgba(20,241,149,0)}}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+  button{font-family:Archivo;font-weight:800;border:none;border-radius:13px;padding:14px;font-size:15px;cursor:pointer;transition:transform .08s,filter .15s}
+  button:active{transform:translateY(2px)}
+  button:disabled{opacity:.4;cursor:default}
+  .btn-sim{background:linear-gradient(90deg,var(--gold),#e0a31c);color:#1a1200;font-size:17px;letter-spacing:.5px}
+  .btn-sol{background:linear-gradient(90deg,var(--sol),#7d27e0);color:#fff;display:flex;align-items:center;justify-content:center;gap:7px}
+  .btn-ghost{background:#161616;color:var(--ink);border:1px solid #2a2a2a}
+
+  /* overlays */
+  .screen{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px;background:radial-gradient(120% 90% at 50% 10%,#1a1206,#070707)}
+  .screen.show{display:flex}
+  #landing .title{font-size:54px;letter-spacing:5px}
+  #landing .sub{font-size:13px;margin-top:14px;max-width:300px}
+  #landing button{margin-top:26px;width:200px}
+
+  /* simulate */
+  #sim{background:rgba(5,5,5,.96)}
+  .simlabel{font:700 11px 'Space Mono';color:var(--muted);letter-spacing:2px;margin-bottom:16px}
+  .slot{font-weight:900;font-size:30px;line-height:1.2;min-height:80px;display:flex;align-items:center;justify-content:center;gap:10px;
+    border:1px solid #2a2a2a;border-radius:16px;padding:18px 22px;background:#0e0e0e;min-width:240px}
+  .slot .f{font-size:40px}
+  .count{font:900 60px Archivo;color:var(--gold);margin-top:18px;text-shadow:0 0 24px rgba(255,206,71,.4)}
+
+  /* result */
+  #result{background:#070707}
+  #result.win{background:radial-gradient(120% 90% at 50% 20%,#06301c,#030b06)}
+  #result.lose{background:radial-gradient(120% 90% at 50% 20%,#350808,#0b0303)}
+  .verdict{font-weight:900;font-size:60px;letter-spacing:2px;line-height:1}
+  #result.win .verdict{color:var(--green);text-shadow:0 0 30px rgba(22,224,122,.5)}
+  #result.lose .verdict{color:var(--red);text-shadow:0 0 30px rgba(255,46,46,.5)}
+  .rstory{font:700 14px/1.4 'Space Mono';color:var(--ink);margin:14px 0 4px;max-width:320px}
+  .rstory b{color:var(--gold)}
+  .rwrap{width:100%;max-width:340px;margin-top:14px}
+  .nameIn{width:100%;padding:12px;border-radius:12px;border:1px solid #333;background:#0d0d0d;color:#fff;font:800 15px Archivo;text-align:center;margin-bottom:10px}
+  .nameIn::placeholder{color:#5f5a51}
+  .txlink{display:block;margin-top:10px;font:700 11px 'Space Mono';color:var(--sol2);word-break:break-all;text-decoration:none}
+  .mini{font:700 10px 'Space Mono';color:#9a948a;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">CURSED</div>
+    <div class="sub">THE TEAM EVERYONE PICKS… <b>LOSES.</b></div>
+    <div class="live">WORLD CUP 2026 · LIVE</div>
+  </header>
+
+  <div class="scrollarea">
+    <div class="meta" id="meta">tap a nation — but beware the crowd</div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="foot">
+    <div class="solbar">
+      <span class="l"><span class="pulse"></span><span id="solStatus">SOLANA · DEVNET</span></span>
+      <span class="r" id="solInfo">connect to brand your prophecy →</span>
+    </div>
+    <div class="row">
+      <button class="btn-sol" id="connectBtn">⬡ Connect Phantom</button>
+      <button class="btn-sim" id="simBtn" disabled>PICK A TEAM</button>
+    </div>
+  </div>
+
+  <!-- landing -->
+  <div class="screen show" id="landing">
+    <div class="title">CURSED</div>
+    <div class="sub">The team everyone picks… <b style="color:var(--red)">loses.</b><br><br>Fade the crowd. Back a prophet, not a favorite.<br>Your call gets branded onto Solana — forever.</div>
+    <button class="btn-sim" id="enterBtn">ENTER THE DRAW ⚽</button>
+  </div>
+
+  <!-- simulate -->
+  <div class="screen" id="sim">
+    <div class="simlabel" id="simLabel">SIMULATING THE TOURNAMENT…</div>
+    <div class="slot" id="slot"><span class="f">🏆</span><span>?</span></div>
+    <div class="count" id="simCount">3</div>
+  </div>
+
+  <!-- result -->
+  <div class="screen" id="result">
+    <div class="verdict" id="rVerdict"></div>
+    <div class="rstory" id="rStory"></div>
+    <div class="rwrap">
+      <input class="nameIn" id="rName" maxlength="16" placeholder="your name / handle" />
+      <button class="btn-sol" id="mintBtn" style="width:100%">⛓️ Brand it on Solana</button>
+      <a class="txlink" id="rTx" target="_blank" rel="noopener"></a>
+      <div class="mini" id="rMini"></div>
+      <button class="btn-ghost" id="againBtn" style="width:100%;margin-top:12px">↻ Pick again</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+/* ===== SOLANA (reused, debugged: preload + mobile deeplink) ===== */
+let SOL=null,connection=null,provider=null,walletPk=null;
+const MEMO_PROGRAM="MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
+const solInfo=document.getElementById('solInfo'),solStatus=document.getElementById('solStatus');
+async function loadSolana(){ if(SOL) return SOL; SOL=await import("https://esm.sh/@solana/web3.js@1.95.3");
+  connection=new SOL.Connection(SOL.clusterApiUrl("devnet"),"confirmed"); return SOL; }
+const getProvider=()=>window.phantom?.solana??window.solana;
+const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+loadSolana().catch(()=>{});
+const short=a=>a.slice(0,4)+'…'+a.slice(-4);
+async function refreshBal(){ if(!walletPk) return; try{const b=await connection.getBalance(walletPk);
+  solInfo.textContent=`${(b/SOL.LAMPORTS_PER_SOL).toFixed(3)} SOL · ${short(walletPk.toBase58())}`;}catch(e){} }
+let walletState='idle'; const connectBtn=document.getElementById('connectBtn');
+async function onWalletBtn(){
+  if(walletState==='connected') return airdrop();
+  try{
+    if(!SOL){ connectBtn.textContent='… loading'; await loadSolana(); }
+    provider=getProvider();
+    if(!provider?.isPhantom){
+      if(isMobile){ const u=encodeURIComponent(location.href); solInfo.textContent='opening in Phantom app…'; location.href=`https://phantom.app/ul/browse/${u}?ref=${u}`; return; }
+      solInfo.textContent='Phantom not detected — install/enable the extension at phantom.app, then reload'; return;
+    }
+    connectBtn.textContent='… approve in Phantom';
+    const res=await provider.connect(); walletPk=new SOL.PublicKey(res.publicKey.toString());
+    walletState='connected'; solStatus.textContent='CONNECTED · DEVNET'; connectBtn.textContent='💧 Get devnet SOL'; await refreshBal();
+  }catch(err){ solInfo.textContent=(err?.code===4001)?'connect rejected in Phantom':('connect failed: '+(err?.message||'unknown')); connectBtn.textContent='⬡ Connect Phantom'; }
+}
+async function airdrop(){ if(!walletPk) return; solInfo.textContent='requesting airdrop…';
+  try{const sig=await connection.requestAirdrop(walletPk,SOL.LAMPORTS_PER_SOL);await connection.confirmTransaction(sig,"confirmed");await refreshBal();}
+  catch(e){ solInfo.textContent='faucet busy → faucet.solana.com'; } }
+connectBtn.addEventListener('click',onWalletBtn);
+async function mintMemo(memoText){
+  await loadSolana();
+  if(!provider){ provider=getProvider(); if(provider?.isPhantom){ const r=await provider.connect(); walletPk=new SOL.PublicKey(r.publicKey.toString()); walletState='connected'; } }
+  if(!provider?.isPhantom||!walletPk) throw new Error('Connect Phantom first');
+  const ix=new SOL.TransactionInstruction({keys:[{pubkey:walletPk,isSigner:true,isWritable:false}],programId:new SOL.PublicKey(MEMO_PROGRAM),data:new TextEncoder().encode(memoText)});
+  const tx=new SOL.Transaction().add(ix); tx.feePayer=walletPk; tx.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+  const {signature}=await provider.signAndSendTransaction(tx); await connection.confirmTransaction(signature,"confirmed"); refreshBal(); return signature;
+}
+
+/* ===== SFX + confetti ===== */
+let actx;
+function tone(f,d,t='sine',v=.2,w=0){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(actx.destination);const s=actx.currentTime+w;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d);}catch(e){}}
+const sTick=()=>tone(880,.04,'square',.12);
+const sWin=()=>{[523,659,784,1046,1318].forEach((f,i)=>tone(f,.2,'square',.16,i*.09))};
+const sLose=()=>{tone(200,.5,'sawtooth',.22);tone(120,.6,'square',.18,.1);tone(80,.7,'sawtooth',.14,.2)};
+
+/* ===== CURSED — World Cup 2026 ===== */
+// Real 2026 field; stars are current squad members. "str" ~ real title odds; "seed" = crowd-pick range (favorites crowded).
+const TEAMS=[
+  {n:'France',f:'🇫🇷',star:'Kylian Mbappé',str:10,seed:[58,82]},
+  {n:'Spain',f:'🇪🇸',star:'Lamine Yamal',str:10,seed:[55,78]},
+  {n:'England',f:'🏴󠁧󠁢󠁥󠁿',star:'Jude Bellingham',str:9,seed:[50,72]},
+  {n:'Argentina',f:'🇦🇷',star:'Lionel Messi (6th & last)',str:9,seed:[52,74]},
+  {n:'Brazil',f:'🇧🇷',star:'Vinícius Júnior',str:8,seed:[48,70]},
+  {n:'Portugal',f:'🇵🇹',star:'Cristiano Ronaldo (6th, 41)',str:7,seed:[40,60]},
+  {n:'Germany',f:'🇩🇪',star:'Jamal Musiala',str:7,seed:[34,52]},
+  {n:'Netherlands',f:'🇳🇱',star:'Virgil van Dijk',str:6,seed:[22,38]},
+  {n:'USA',f:'🇺🇸',star:'Christian Pulisic',str:4,seed:[20,36]},
+  {n:'Mexico',f:'🇲🇽',star:'Santiago Giménez',str:4,seed:[18,32]},
+  {n:'Morocco',f:'🇲🇦',star:'Achraf Hakimi',str:5,seed:[10,20]},
+  {n:'Colombia',f:'🇨🇴',star:'Luis Díaz',str:5,seed:[8,18]},
+  {n:'Uruguay',f:'🇺🇾',star:'Federico Valverde',str:5,seed:[8,18]},
+  {n:'Japan',f:'🇯🇵',star:'Takefusa Kubo',str:4,seed:[6,15]},
+  {n:'South Korea',f:'🇰🇷',star:'Son Heung-min',str:4,seed:[5,14]},
+  {n:'Senegal',f:'🇸🇳',star:'Sadio Mané',str:4,seed:[5,14]},
+];
+const LS='cursed2026_picks';
+function loadPicks(){
+  let p=null; try{p=JSON.parse(localStorage.getItem(LS));}catch(e){}
+  if(!Array.isArray(p)||p.length!==TEAMS.length){
+    p=TEAMS.map(t=> t.seed[0]+Math.floor(Math.random()*(t.seed[1]-t.seed[0]+1)) );
+    try{localStorage.setItem(LS,JSON.stringify(p));}catch(e){}
+  }
+  return p;
+}
+let picks=loadPicks(), selIdx=-1, locked=false;
+const grid=document.getElementById('grid'), meta=document.getElementById('meta');
+const total=()=>picks.reduce((a,b)=>a+b,0);
+const maxShare=()=>Math.max(...picks)/total();
+
+function render(){
+  const tot=total(), mx=maxShare(), avg=1/TEAMS.length;
+  grid.innerHTML='';
+  TEAMS.forEach((t,i)=>{
+    const share=picks[i]/tot, cursed= share>=avg*1.45;
+    const card=document.createElement('div');
+    card.className='card'+(i===selIdx?' sel':'')+(cursed?' cursed':'');
+    card.innerHTML=`
+      <div class="top"><span class="flag">${t.f}</span>
+        <div><div class="nm">${t.n}</div><div class="star">${t.star}</div></div></div>
+      <div class="meter"><i style="width:${Math.max(6,Math.round(share/mx*100))}%"></i></div>
+      <div class="pct"><span>${picks[i]} picks</span><span class="risk">${cursed?'⚠ HIGH CURSE':'safe-ish'}</span></div>
+      <div class="badge">💀</div><div class="selbadge">✓ LOCKED IN</div>`;
+    if(!locked) card.onclick=()=>select(i);
+    grid.appendChild(card);
+  });
+  meta.innerHTML=`<b>${tot.toLocaleString()}</b> wallets have chosen · favorites are <b style="color:var(--red)">overcrowded</b>`;
+}
+function select(i){
+  selIdx=i; render();
+  const t=TEAMS[i], share=picks[i]/total(), cursed=share>=(1/TEAMS.length)*1.45;
+  document.getElementById('simBtn').disabled=false;
+  document.getElementById('simBtn').textContent=cursed?`SIMULATE — ${t.n} is CURSED 💀`:`SIMULATE — back ${t.n} ⚽`;
+}
+
+document.getElementById('enterBtn').onclick=()=>{ try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){} document.getElementById('landing').classList.remove('show'); render(); };
+
+const simScreen=document.getElementById('sim'), slot=document.getElementById('slot'), simCount=document.getElementById('simCount'), simLabel=document.getElementById('simLabel');
+document.getElementById('simBtn').onclick=runSim;
+function weightedChampion(){
+  // INVERSE popularity: more picks => worse odds. base strength matters, crowd is the curse.
+  const w=TEAMS.map((t,i)=> (t.str*t.str*100)/Math.pow(picks[i]+4,1.35));
+  const sum=w.reduce((a,b)=>a+b,0); let r=Math.random()*sum;
+  for(let i=0;i<w.length;i++){ r-=w[i]; if(r<=0) return i; } return w.length-1;
+}
+function runSim(){
+  if(locked) return; locked=true;
+  picks[selIdx]++; try{localStorage.setItem(LS,JSON.stringify(picks));}catch(e){}
+  const champ=weightedChampion();
+  simScreen.classList.add('show'); simLabel.textContent='SIMULATING THE TOURNAMENT…';
+  let cd=3; simCount.textContent=cd;
+  const cdT=setInterval(()=>{ cd--; if(cd>=1){simCount.textContent=cd;} },1000);
+  // slot-machine flash, easing out over ~3s, landing on champ
+  let elapsed=0, delay=60;
+  function flash(){
+    elapsed+=delay;
+    if(elapsed<2700){
+      const j=Math.floor(Math.random()*TEAMS.length); slot.innerHTML=`<span class="f">${TEAMS[j].f}</span><span>${TEAMS[j].n}</span>`; sTick();
+      delay=Math.min(delay*1.14,260); setTimeout(flash,delay);
+    }else{
+      clearInterval(cdT); simCount.textContent='';
+      slot.innerHTML=`<span class="f">🏆</span><span>${TEAMS[champ].f} ${TEAMS[champ].n}</span>`;
+      simLabel.textContent='WORLD CHAMPIONS 2026';
+      setTimeout(()=>reveal(champ),900);
+    }
+  }
+  setTimeout(flash,delay);
+}
+
+const resScreen=document.getElementById('result');
+let lastVerdict='';
+function reveal(champ){
+  simScreen.classList.remove('show');
+  const win=(champ===selIdx), me=TEAMS[selIdx], ch=TEAMS[champ];
+  lastVerdict=win?'PROPHET':'CURSED';
+  resScreen.className='screen show '+(win?'win':'lose');
+  document.getElementById('rVerdict').textContent=win?'PROPHET 🟡':'CURSED 💀';
+  document.getElementById('rStory').innerHTML = win
+    ? `You backed <b>${me.f} ${me.n}</b> while the crowd chased favorites. They lifted the trophy. You saw it first.`
+    : `<b>${ch.f} ${ch.n}</b> are champions. Your <b>${me.f} ${me.n}</b> drowned in the crowd's curse.`;
+  document.getElementById('rTx').textContent=''; document.getElementById('rTx').removeAttribute('href');
+  document.getElementById('rMini').textContent='';
+  const mb=document.getElementById('mintBtn'); mb.disabled=false; mb.textContent='⛓️ Brand it on Solana';
+  const saved=localStorage.getItem('cursed_name'); if(saved) document.getElementById('rName').value=saved;
+  if(win){ sWin(); confetti(170,['#16e07a','#ffce47','#fff']); } else { sLose(); confetti(120,['#ff2e2e','#5a1414','#222']); }
+}
+document.getElementById('mintBtn').onclick=async(e)=>{
+  const btn=e.currentTarget, name=document.getElementById('rName').value.trim(); localStorage.setItem('cursed_name',name);
+  const mini=document.getElementById('rMini'), tx=document.getElementById('rTx');
+  const w=walletPk?short(walletPk.toBase58()):'wallet';
+  const memo=`CURSED 2026 | ${TEAMS[selIdx].n} | ${lastVerdict} | ${name||w}`;
+  btn.disabled=true; const old=btn.textContent; btn.textContent='⛓️ signing on Solana…'; mini.textContent='approve in Phantom — writing your prophecy to devnet';
+  try{ const sig=await mintMemo(memo);
+    tx.textContent='✅ on-chain proof → view on Solana Explorer'; tx.href=`https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+    mini.textContent='your prophecy now lives permanently on Solana 🟢'; btn.textContent='⛓️ Branded!'; confetti(120);
+  }catch(err){ mini.textContent=(err.message||'mint failed')+' — need devnet SOL? tap Connect → Get devnet SOL'; btn.disabled=false; btn.textContent=old; }
+};
+document.getElementById('againBtn').onclick=()=>{ resScreen.className='screen'; locked=false; selIdx=-1;
+  document.getElementById('simBtn').disabled=true; document.getElementById('simBtn').textContent='PICK A TEAM'; render(); };
+
+/* confetti */
+const cv=document.createElement('canvas'); cv.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:60'; document.body.appendChild(cv);
+const cx=cv.getContext('2d'); let parts=[]; function sz(){cv.width=innerWidth;cv.height=innerHeight} sz(); addEventListener('resize',sz);
+function confetti(n=120,cols){cols=cols||['#ffce47','#14f195','#9945ff','#ff2e63','#fff'];for(let i=0;i<n;i++)parts.push({x:innerWidth/2,y:innerHeight*.35,vx:(Math.random()-.5)*15,vy:Math.random()*-15-3,g:.42,s:6+Math.random()*7,c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-.5)*.5,life:70+Math.random()*40})}
+(function tk(){cx.clearRect(0,0,cv.width,cv.height);parts=parts.filter(p=>p.life-->0);parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);cx.restore()});requestAnimationFrame(tk)})();
+
+render();
+</script>
+</body>
+</html>

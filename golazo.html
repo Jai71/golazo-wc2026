@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0a7d2c" />
+<title>GOLAZO ⚽ — On-Chain Penalty Shootout</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  :root{
+    --grass:#0a7d2c; --grass2:#0a6e27; --line:#eafff0; --gold:#ffd54a;
+    --ink:#0b1f12; --card:#0f2a18; --pop:#ff2e63; --sol:#9945ff; --sol2:#14f195;
+  }
+  html,body{height:100%}
+  body{
+    font-family:Archivo,system-ui,sans-serif; color:#fff; overflow:hidden;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #14b04a 0%, var(--grass) 45%, var(--grass2) 100%);
+    display:flex;flex-direction:column;align-items:center;
+    min-height:100dvh; user-select:none; touch-action:manipulation;
+  }
+  .wrap{width:100%;max-width:480px;display:flex;flex-direction:column;height:100dvh;padding:10px 12px 14px}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto}
+  .brand{font-weight:900;font-size:26px;letter-spacing:-1px;line-height:1;
+    background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 2px 0 rgba(0,0,0,.18)}
+  .brand small{display:block;font-size:9px;letter-spacing:2px;color:#dfffe9;font-weight:700;-webkit-text-fill-color:#dfffe9}
+  .tag{font:700 9px/1 'Space Mono',monospace;letter-spacing:1px;color:#04210f;background:var(--gold);
+    padding:6px 8px;border-radius:999px;text-align:center}
+
+  .scoreboard{display:flex;gap:8px;margin:10px 0 8px;flex:0 0 auto}
+  .stat{flex:1;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:8px 6px;text-align:center}
+  .stat b{display:block;font-size:24px;font-weight:900;line-height:1}
+  .stat span{font:700 9px/1.4 'Space Mono',monospace;letter-spacing:1px;color:#bff5cf}
+  .stat.hot b{color:var(--gold)}
+
+  /* pitch / goal */
+  .pitch{position:relative;flex:1 1 auto;min-height:0;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,#16a049 0%, #0c8f3a 60%, #0a7d2c 100%);
+    border:1px solid rgba(255,255,255,.18); box-shadow:inset 0 -40px 60px rgba(0,0,0,.25)}
+  .stripes{position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 14%,transparent 14% 28%)}
+  .goal{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:84%;height:46%;
+    border:6px solid #fff;border-bottom:none;border-radius:8px 8px 0 0;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,255,255,.16) 0 2px,transparent 2px 16px),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,transparent 2px 16px),
+      rgba(255,255,255,.04);
+    box-shadow:0 0 0 3px rgba(0,0,0,.15)}
+  .keeper{position:absolute;bottom:0;left:50%;width:54px;height:64px;transform:translateX(-50%);
+    transition:left .28s cubic-bezier(.3,1.4,.5,1), transform .28s;font-size:48px;text-align:center;line-height:64px;filter:drop-shadow(0 6px 6px rgba(0,0,0,.35))}
+  .ball{position:absolute;left:50%;bottom:10%;width:42px;height:42px;font-size:38px;line-height:42px;text-align:center;
+    transform:translateX(-50%);transition:none;filter:drop-shadow(0 8px 6px rgba(0,0,0,.4));z-index:4}
+  .ball.spin{animation:spin .5s linear infinite}
+  @keyframes spin{to{transform:translateX(-50%) rotate(360deg)}}
+
+  /* aim zones */
+  .zones{position:absolute;top:7%;left:50%;transform:translateX(-50%);width:84%;height:46%;
+    display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;z-index:5}
+  .zone{border:1.5px dashed rgba(255,255,255,.0);border-radius:10px;display:flex;align-items:center;justify-content:center;
+    transition:.12s;cursor:pointer}
+  .zones.live .zone{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.05)}
+  .zones.live .zone:active,.zones.live .zone.hov{background:var(--gold);transform:scale(.97)}
+  .zone .dot{width:26px;height:26px;border-radius:50%;border:2px solid #fff;opacity:0;transition:.12s}
+  .zones.live .zone .dot{opacity:.45}
+  .zone .corner{position:absolute;font:800 9px 'Space Mono';color:#04210f;opacity:0}
+  .crowd{position:absolute;top:0;left:0;right:0;height:7%;background:repeating-linear-gradient(90deg,#2b2f6a 0 6px,#3a3f8a 6px 12px,#5b2c7a 12px 18px);opacity:.8}
+
+  .msg{position:absolute;top:54%;left:0;right:0;text-align:center;font-weight:900;font-size:40px;letter-spacing:-1px;
+    pointer-events:none;z-index:6;opacity:0;transform:scale(.6);transition:.2s;text-shadow:0 4px 12px rgba(0,0,0,.5)}
+  .msg.show{opacity:1;transform:scale(1)}
+  .msg.goal{color:var(--sol2)} .msg.save{color:var(--pop)}
+
+  .hint{position:absolute;bottom:9px;left:0;right:0;text-align:center;font:700 12px 'Space Mono';color:#eafff0;
+    z-index:6;text-shadow:0 2px 6px rgba(0,0,0,.5);pointer-events:none}
+
+  /* controls / footer */
+  .foot{flex:0 0 auto;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  button{font-family:Archivo;font-weight:800;border:none;border-radius:14px;padding:14px;font-size:16px;cursor:pointer;
+    transition:transform .08s, filter .15s}
+  button:active{transform:translateY(2px) scale(.99)}
+  .btn-go{background:linear-gradient(90deg,var(--gold),#ffb300);color:#3a2400}
+  .btn-sol{background:linear-gradient(90deg,var(--sol),#7d27e0);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.22)}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+
+  /* solana panel */
+  .solbar{background:rgba(0,0,0,.25);border:1px solid rgba(153,69,255,.4);border-radius:14px;padding:9px 11px;
+    font:700 11px 'Space Mono';display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .solbar .l{color:var(--sol2)} .solbar .r{color:#cdbcff;text-align:right}
+  .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sol2);margin-right:6px;
+    box-shadow:0 0 0 0 var(--sol2);animation:p 1.6s infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(20,241,149,.6)}70%{box-shadow:0 0 0 8px rgba(20,241,149,0)}100%{box-shadow:0 0 0 0 rgba(20,241,149,0)}}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(3,12,6,.82);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:18px;z-index:30}
+  .modal.show{display:flex}
+  .sheet{width:100%;max-width:380px;background:linear-gradient(180deg,#10331d,#0a2113);border:1px solid rgba(255,255,255,.16);
+    border-radius:22px;padding:22px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .sheet h2{font-size:30px;font-weight:900;letter-spacing:-1px;margin-bottom:2px}
+  .sheet .big{font-size:64px;font-weight:900;color:var(--gold);line-height:1;margin:6px 0}
+  .sheet p{color:#bff5cf;font-size:13px;margin-bottom:14px}
+  .nameIn{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.3);
+    color:#fff;font:800 15px Archivo;text-align:center;margin-bottom:10px}
+  .nameIn::placeholder{color:#7fae8d}
+  .txlink{display:block;margin-top:10px;font:700 11px 'Space Mono';color:var(--sol2);word-break:break-all;text-decoration:none}
+  .mini{font:700 10px 'Space Mono';color:#9fd9b1;margin-top:8px}
+  canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:40}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+  <header>
+    <div class="brand">GOLAZO<small>ON-CHAIN PENALTY SHOOTOUT</small></div>
+    <div class="tag">VIBER × SOLANA<br>WORLD CUP</div>
+  </header>
+
+  <div class="scoreboard">
+    <div class="stat"><b id="sGoals">0</b><span>GOALS</span></div>
+    <div class="stat hot"><b id="sStreak">0</b><span>STREAK 🔥</span></div>
+    <div class="stat"><b id="sShots">5</b><span>SHOTS LEFT</span></div>
+  </div>
+
+  <div class="pitch" id="pitch">
+    <div class="crowd"></div>
+    <div class="stripes"></div>
+    <div class="goal"></div>
+    <div class="keeper" id="keeper">🧤</div>
+    <div class="zones" id="zones">
+      <div class="zone" data-z="0"><div class="dot"></div></div>
+      <div class="zone" data-z="1"><div class="dot"></div></div>
+      <div class="zone" data-z="2"><div class="dot"></div></div>
+      <div class="zone" data-z="3"><div class="dot"></div></div>
+      <div class="zone" data-z="4"><div class="dot"></div></div>
+      <div class="zone" data-z="5"><div class="dot"></div></div>
+    </div>
+    <div class="ball" id="ball">⚽</div>
+    <div class="msg" id="msg"></div>
+    <div class="hint" id="hint">TAP A TARGET TO SHOOT ⚽</div>
+  </div>
+
+  <div class="foot">
+    <div class="solbar" id="solbar">
+      <span class="l"><span class="pulse"></span><span id="solStatus">SOLANA · DEVNET</span></span>
+      <span class="r" id="solInfo">tap “Connect” to go on-chain →</span>
+    </div>
+    <div class="row">
+      <button class="btn-sol" id="connectBtn">⬡ Connect Phantom</button>
+      <button class="btn-ghost" id="restartBtn">↻ New Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game over modal -->
+<div class="modal" id="modal">
+  <div class="sheet">
+    <h2 id="moTitle">FULL TIME</h2>
+    <div class="big" id="moScore">0</div>
+    <p id="moSub">goals scored — now immortalize it on Solana ⛓️</p>
+    <input class="nameIn" id="moName" maxlength="16" placeholder="your name / handle" />
+    <button class="btn-sol" id="mintBtn" style="width:100%">⛓️ Mint my score on Solana</button>
+    <a class="txlink" id="moTx" target="_blank" rel="noopener"></a>
+    <div class="mini" id="moMini"></div>
+    <button class="btn-go" id="playAgain" style="width:100%;margin-top:12px">⚽ Play again</button>
+  </div>
+</div>
+
+<script type="module">
+/* ---------- Solana (loaded lazily; game works even if this fails) ---------- */
+let SOL = null, connection = null, provider = null, walletPk = null;
+const MEMO_PROGRAM = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr";
+const solInfo = document.getElementById('solInfo');
+const solStatus = document.getElementById('solStatus');
+async function loadSolana(){
+  if(SOL) return SOL;
+  SOL = await import("https://esm.sh/@solana/web3.js@1.95.3");
+  connection = new SOL.Connection(SOL.clusterApiUrl("devnet"), "confirmed");
+  return SOL;
+}
+const getProvider = () => window.phantom?.solana ?? window.solana;
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// Warm the web3 import on load so wallet connect stays inside the user's click gesture.
+loadSolana().catch(()=>{});
+async function refreshBal(){
+  if(!walletPk) return;
+  try{ const b = await connection.getBalance(walletPk); solInfo.textContent = `${(b/SOL.LAMPORTS_PER_SOL).toFixed(3)} SOL · ${short(walletPk.toBase58())}`; }catch(e){}
+}
+const short = a => a.slice(0,4)+'…'+a.slice(-4);
+
+let walletState = 'idle'; // idle -> connected
+const connectBtn = document.getElementById('connectBtn');
+async function onWalletBtn(){
+  if(walletState==='connected') return airdrop();
+  try{
+    if(!SOL){ connectBtn.textContent='… loading'; await loadSolana(); }
+    provider = getProvider();
+    if(!provider?.isPhantom){
+      if(isMobile){
+        // No injected wallet on mobile browsers — relaunch this dApp inside Phantom's in-app browser.
+        const u = encodeURIComponent(location.href);
+        solInfo.textContent='opening in Phantom app…';
+        location.href = `https://phantom.app/ul/browse/${u}?ref=${u}`;
+        return;
+      }
+      solInfo.textContent='Phantom not detected — install/enable the extension at phantom.app, then reload';
+      return;
+    }
+    connectBtn.textContent='… approve in Phantom';
+    const res = await provider.connect();
+    walletPk = new SOL.PublicKey(res.publicKey.toString());
+    walletState='connected';
+    solStatus.textContent='CONNECTED · DEVNET';
+    connectBtn.textContent='💧 Get devnet SOL';
+    await refreshBal();
+  }catch(err){
+    solInfo.textContent = (err?.code===4001) ? 'connect rejected in Phantom' : ('connect failed: '+(err?.message||'unknown'));
+    connectBtn.textContent='⬡ Connect Phantom';
+  }
+}
+connectBtn.addEventListener('click', onWalletBtn);
+async function airdrop(){
+  if(!walletPk) return;
+  solInfo.textContent='requesting airdrop…';
+  try{
+    const sig = await connection.requestAirdrop(walletPk, SOL.LAMPORTS_PER_SOL);
+    await connection.confirmTransaction(sig,"confirmed");
+    await refreshBal();
+  }catch(e){ solInfo.textContent='faucet busy → faucet.solana.com'; }
+}
+async function mintScore(name, score){
+  await loadSolana();
+  if(!provider){ provider = getProvider(); if(provider?.isPhantom){ const r=await provider.connect(); walletPk=new SOL.PublicKey(r.publicKey.toString()); } }
+  if(!provider?.isPhantom || !walletPk) throw new Error('Connect Phantom first');
+  const text = `GOLAZO⚽ | ${name||'anon'} | ${score} goals | ${new Date().toISOString().slice(0,16)}`;
+  const ix = new SOL.TransactionInstruction({
+    keys:[{pubkey:walletPk,isSigner:true,isWritable:false}],
+    programId:new SOL.PublicKey(MEMO_PROGRAM),
+    data:new TextEncoder().encode(text),
+  });
+  const tx = new SOL.Transaction().add(ix);
+  tx.feePayer = walletPk;
+  tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+  const { signature } = await provider.signAndSendTransaction(tx);
+  await connection.confirmTransaction(signature,"confirmed");
+  refreshBal();
+  return signature;
+}
+
+/* ---------- tiny WebAudio SFX ---------- */
+let actx;
+function tone(freq,dur,type='sine',vol=.2,when=0){
+  try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.type=type;o.frequency.value=freq;o.connect(g);g.connect(actx.destination);
+    const t=actx.currentTime+when;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+    o.start(t);o.stop(t+dur);}catch(e){}
+}
+const sndGoal=()=>{ [523,659,784,1046].forEach((f,i)=>tone(f,.18,'square',.18,i*.08)); tone(180,.5,'sawtooth',.12,.1); };
+const sndSave=()=>{ tone(160,.18,'sawtooth',.2); tone(110,.3,'square',.15,.08); };
+const sndKick=()=>tone(380,.06,'triangle',.25);
+
+/* ---------- confetti ---------- */
+const fx=document.getElementById('fx'),fxc=fx.getContext('2d');let parts=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight;} sizeFx(); addEventListener('resize',sizeFx);
+function burst(n=120){const cols=['#ffd54a','#14f195','#9945ff','#ff2e63','#fff'];
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2,y:innerHeight*.42,vx:(Math.random()-.5)*14,vy:Math.random()*-14-4,
+    g:.4+Math.random()*.3,s:6+Math.random()*7,c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-.5)*.5,life:60+Math.random()*40});}
+function tick(){fxc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.life-->0);
+  parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
+    fxc.save();fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);fxc.restore();});
+  requestAnimationFrame(tick);} tick();
+
+/* ---------- GAME ---------- */
+const ZONES=6, MAXSHOTS=5;
+let goals=0, streak=0, bestStreak=0, shots=MAXSHOTS, busy=false;
+const zonesEl=document.getElementById('zones'), keeper=document.getElementById('keeper'), ball=document.getElementById('ball');
+const msg=document.getElementById('msg'), hint=document.getElementById('hint');
+const sGoals=document.getElementById('sGoals'), sStreak=document.getElementById('sStreak'), sShots=document.getElementById('sShots');
+// zone center positions (% within the goal box), index: 0 TL 1 TM 2 TR 3 BL 4 BM 5 BR
+const ZPOS=[[18,26],[50,26],[82,26],[18,70],[50,70],[82,70]];
+const KEEPER_X=[14,50,86,14,50,86]; // keeper horizontal per zone guess
+
+function setLive(v){ zonesEl.classList.toggle('live',v); }
+function updateHud(){ sGoals.textContent=goals; sStreak.textContent=streak; sShots.textContent=shots;
+  document.querySelector('.stat.hot').style.filter = streak>=3?'drop-shadow(0 0 10px #ffd54a)':''; }
+function flash(text,cls){ msg.textContent=text; msg.className='msg show '+cls; setTimeout(()=>msg.classList.remove('show'),750); }
+
+function newGame(){
+  goals=0;streak=0;shots=MAXSHOTS;busy=false;
+  updateHud(); setLive(true); hint.textContent='TAP A TARGET TO SHOOT ⚽';
+  keeper.style.left='50%'; keeper.textContent='🧤';
+  resetBall(); document.getElementById('modal').classList.remove('show');
+}
+function resetBall(){ ball.style.transition='none'; ball.style.left='50%'; ball.style.bottom='10%'; ball.style.fontSize='38px'; ball.classList.remove('spin'); }
+
+zonesEl.querySelectorAll('.zone').forEach(z=>{
+  z.addEventListener('click',()=>shoot(+z.dataset.z));
+});
+
+function keeperSkill(){ // gets smarter as streak grows
+  return Math.min(.18 + streak*0.07, .55);
+}
+function shoot(zone){
+  if(busy||shots<=0) return;
+  busy=true; setLive(false); sndKick();
+  // keeper decides: with prob=skill it dives to player's column, else random
+  const skill=keeperSkill();
+  let kZone;
+  if(Math.random()<skill){ kZone=zone; }                 // read the shot
+  else { kZone=Math.floor(Math.random()*ZONES); }
+  // top corners (0,2) are 60% unsaveable even if read right (placement skill)
+  const topCorner=(zone===0||zone===2);
+  const saved = (kZone===zone) && !(topCorner && Math.random()<0.6);
+
+  // animate keeper to its dive column
+  keeper.style.left=KEEPER_X[kZone]+'%';
+  keeper.style.transform = `translateX(-50%) ${kZone<3?'translateY(-14px) rotate('+(kZone===0?'-18':kZone===2?'18':'0')+'deg)':''}`;
+  keeper.textContent = saved?'🧤':'🧤';
+
+  // animate ball to chosen zone
+  const [bx,by]=ZPOS[zone];
+  ball.classList.add('spin');
+  requestAnimationFrame(()=>{
+    ball.style.transition='left .42s cubic-bezier(.3,.7,.4,1), bottom .42s cubic-bezier(.3,.7,.4,1), font-size .42s';
+    // map zone % (inside goal box top:7% h:46%, left center 8%..92%) to pitch coords
+    ball.style.left = (8 + bx*0.84) + '%';
+    ball.style.bottom = (100 - (7 + by*0.46)) + '%';
+    ball.style.fontSize='26px';
+  });
+
+  setTimeout(()=>{
+    shots--;
+    if(saved){
+      streak=0; flash('SAVED! 🧤','save'); sndSave();
+      navigator.vibrate?.(120); pitchShake();
+    }else{
+      goals++; streak++; bestStreak=Math.max(bestStreak,streak);
+      flash(streak>=3?`GOLAZO! ×${streak} 🔥`:'GOAL! ⚽','goal'); sndGoal();
+      navigator.vibrate?.([40,40,80]); burst(streak>=3?180:120);
+    }
+    updateHud();
+    setTimeout(()=>{
+      if(shots<=0){ endGame(); }
+      else { resetBall(); keeper.style.left='50%'; keeper.style.transform='translateX(-50%)'; setLive(true); busy=false;
+        hint.textContent = `${shots} shot${shots>1?'s':''} left — aim for the corners!`; }
+    },650);
+  },470);
+}
+function pitchShake(){ const p=document.getElementById('pitch'); p.animate(
+  [{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:220});}
+
+const modal=document.getElementById('modal');
+function endGame(){
+  setLive(false);
+  document.getElementById('moScore').textContent=goals;
+  const rating = goals>=5?'PERFECT — BALLON D\'OR 🏆': goals>=4?'WORLD CLASS ⭐': goals>=3?'SOLID STRIKER ⚽': goals>=1?'KEEP PRACTICING':'KEEPER\'S DAY 🧤';
+  document.getElementById('moTitle').textContent='FULL TIME';
+  document.getElementById('moSub').innerHTML = `${rating} · best streak <b>${bestStreak}</b><br><span style="opacity:.8">now immortalize your score on-chain ⛓️</span>`;
+  document.getElementById('moTx').textContent=''; document.getElementById('moTx').removeAttribute('href');
+  document.getElementById('moMini').textContent='';
+  const saved=localStorage.getItem('golazo_name'); if(saved) document.getElementById('moName').value=saved;
+  modal.classList.add('show');
+}
+document.getElementById('playAgain').addEventListener('click',newGame);
+document.getElementById('restartBtn').addEventListener('click',newGame);
+
+document.getElementById('mintBtn').addEventListener('click', async (e)=>{
+  const btn=e.currentTarget, name=document.getElementById('moName').value.trim();
+  localStorage.setItem('golazo_name',name);
+  const mini=document.getElementById('moMini'), tx=document.getElementById('moTx');
+  btn.disabled=true; const old=btn.textContent; btn.textContent='⛓️ signing on Solana…'; mini.textContent='approve in Phantom — this writes your score to devnet';
+  try{
+    const sig = await mintScore(name, goals);
+    tx.textContent='✅ on-chain proof → view on Solana Explorer';
+    tx.href=`https://explorer.solana.com/tx/${sig}?cluster=devnet`;
+    mini.textContent='your score now lives permanently on Solana 🟢';
+    btn.textContent='⛓️ Minted!'; burst(150); sndGoal();
+  }catch(err){
+    mini.textContent = (err.message||'mint failed')+' — need devnet SOL? tap Connect → Get devnet SOL';
+    btn.disabled=false; btn.textContent=old;
+  }
+});
+
+// hover preview on desktop
+zonesEl.querySelectorAll('.zone').forEach(z=>{
+  z.addEventListener('mouseenter',()=>z.classList.add('hov'));
+  z.addEventListener('mouseleave',()=>z.classList.remove('hov'));
+});
+
+newGame();
+</script>
+</body>
+</html>
